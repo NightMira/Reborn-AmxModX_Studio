@@ -67,32 +67,32 @@ CvarInit() {
 GetModel() {
 	new sBuff[512];
 	get_cvar_string("knife_view_model", sBuff, charsmax(sBuff));
-	ArraySetString(g_aModel, KNIFE_VIEW_MODEL, sBuff);
+	ArrayPushString(g_aModel, sBuff);
 	get_cvar_string("knife_player_model", sBuff, charsmax(sBuff));
-	ArraySetString(g_aModel, KNIFE_PLAYER_MODEL, sBuff);
+	ArrayPushString(g_aModel, sBuff);
 	get_cvar_string("knife_world_model", sBuff, charsmax(sBuff));
-	ArraySetString(g_aModel, KNIFE_WORLD_MODEL, sBuff);
+	ArrayPushString(g_aModel, sBuff);
 
 	get_cvar_string("ak_view_model", sBuff, charsmax(sBuff));
-	ArraySetString(g_aModel, AK_VIEW_MODEL, sBuff);
+	ArrayPushString(g_aModel, sBuff);
 	get_cvar_string("ak_player_model", sBuff, charsmax(sBuff));
-	ArraySetString(g_aModel, AK_PLAYER_MODEL, sBuff);
+	ArrayPushString(g_aModel, sBuff);
 	get_cvar_string("ak_world_model", sBuff, charsmax(sBuff));
-	ArraySetString(g_aModel, AK_WORLD_MODEL, sBuff);
+	ArrayPushString(g_aModel, sBuff);
 
 	get_cvar_string("awp_view_model", sBuff, charsmax(sBuff));
-	ArraySetString(g_aModel, AWP_VIEW_MODEL, sBuff);
+	ArrayPushString(g_aModel, sBuff);
 	get_cvar_string("awp_player_model", sBuff, charsmax(sBuff));
-	ArraySetString(g_aModel, AWP_PLAYER_MODEL, sBuff);
+	ArrayPushString(g_aModel, sBuff);
 	get_cvar_string("awp_world_model", sBuff, charsmax(sBuff));
-	ArraySetString(g_aModel, AWP_WORLD_MODEL, sBuff);
+	ArrayPushString(g_aModel, sBuff);
 
 	get_cvar_string("m4a1_view_model", sBuff, charsmax(sBuff));
-	ArraySetString(g_aModel, M4A1_VIEW_MODEL, sBuff);
+	ArrayPushString(g_aModel, sBuff);
 	get_cvar_string("m4a1_player_model", sBuff, charsmax(sBuff));
-	ArraySetString(g_aModel, M4A1_PLAYER_MODEL, sBuff);
+	ArrayPushString(g_aModel, sBuff);
 	get_cvar_string("m4a1_world_model", sBuff, charsmax(sBuff));
-	ArraySetString(g_aModel, M4A1_WORLD_MODEL, sBuff);
+	ArrayPushString(g_aModel, sBuff);
 
 	for(new i = 0; i <= ArraySize(g_aModel); i++) {
 		formatex(sBuff, charsmax(sBuff), "models/Reborn/%s.mdl", ArrayGetString(g_aModel, i, sBuff, charsmax(sBuff)));
