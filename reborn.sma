@@ -1,11 +1,15 @@
 #include <amxmodx>
 #include <fakemeta>
+#include <hamsandwich>
 
 #define FLAG_ACCESS ADMIN_LEVEL_G
 
 #define PLUGIN_NAME "Reborn"
 #define VERSION "0.1"
 #define AUTHOR "jbengine"
+
+#define linux_diff_player 5
+#define m_pActiveItem 373
 
 enum _:MODEL {
 	KNIFE_VIEW_MODEL,
@@ -36,11 +40,13 @@ enum _:CVAR {
 
 public plugin_precache() {
 	g_aModel = ArrayCreate(64, 0);
-
+	register_clcmd("test", "fn_test");
 	CvarInit();
 	GetModel();
 	GetMap();
 }
+
+public fn_test(iPlayer) return Show_RebornMenu(iPlayer);
 
 CvarInit() {
 	g_iCvar[DAMAGE_AK] = register_cvar("rb_damage_ak", "2.0");
@@ -68,9 +74,6 @@ GetModel() {
 	new sBuff[512], szFile[512];
 	get_cvar_string("knife_view_model", sBuff, charsmax(sBuff));
 	ArrayPushString(g_aModel, sBuff);
-	log_amx(sBuff);
-	ArrayGetString(g_aModel, 0, sBuff, charsmax(sBuff));
-	log_amx(sBuff);
 	get_cvar_string("knife_player_model", sBuff, charsmax(sBuff));
 	ArrayPushString(g_aModel, sBuff);
 	get_cvar_string("knife_world_model", sBuff, charsmax(sBuff));
@@ -156,7 +159,7 @@ BlockMapList(szCfgFile) {
 
 public plugin_init() {
 	register_plugin(PLUGIN_NAME, VERSION, AUTHOR);
-
+	if(g_bPluginEnablie) set_fail_state("Block Map");
 	event_init();
 	menu_init();
 	hamsandwich_init();
@@ -168,7 +171,7 @@ event_init() {
 
 menu_init() {
 	g_iMenu_Game = register_menuid(GAME_MENU_ID);
-	register_menucmd(g_iMenu_Game, 1024, "Handle_RebornMenu");
+	register_menucmd(g_iMenu_Game, 1023, "Handle_RebornMenu");
 }
 
 Show_RebornMenu(iPlayer) {
@@ -188,6 +191,31 @@ Show_RebornMenu(iPlayer) {
 	return show_menu(iPlayer, iKeys, szMenu, -1, GAME_MENU_ID);
 }
 
+public Handle_RebornMenu(iPlayer, iKey) {
+	switch(iKey) {
+		case 0: {
+			g_bKnifeEnable[iPlayer] = !g_bKnifeEnable[iPlayer];
+			
+			new iActiveItem = get_pdata_cbase(iPlayer, m_pActiveItem, linux_diff_player);
+			if(iActiveItem > 0) ExecuteHamB(Ham_Item_Deploy, iActiveItem);
+		}
+	}
+	return PLUGIN_HANDLED;
+}
+
 hamsandwich_init() {
 	return;//RegisterHam(Ham_Player_ResetMaxSpeed, "player", "Ham_PlayerResetMaxSpeed_Post", true);
+}
+
+public plugin_natives() {
+	register_native("rb_menu", "@native_rb_menu");
+}
+
+@native_rb_menu(plugin, argc) {
+	enum { arg_player = 1};
+
+	new iPlayer = get_param(arg_player);
+	new iFlags = get_user_flags(iPlayer);
+	if(iFlags & FLAG_ACCESS) return Show_RebornMenu(iPlayer);
+	return true;
 }
