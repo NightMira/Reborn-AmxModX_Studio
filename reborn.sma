@@ -35,7 +35,7 @@ enum _:CVAR {
 }; new g_iCvar[CVAR];
 
 public plugin_precache() {
-	g_aModel = ArrayCreate(1, 0);
+	g_aModel = ArrayCreate(64, 0);
 
 	CvarInit();
 	GetModel();
@@ -47,27 +47,30 @@ CvarInit() {
 	g_iCvar[DAMAGE_AWP] = register_cvar("rb_damage_awp", "2.0");
 	g_iCvar[DAMAGE_M4A1] = register_cvar("rb_damage_m4a1", "2.0");
 
-	register_cvar("knife_view_model", "model/v_knife.mdl");
-	register_cvar("knife_player_model", "model/p_knife.mdl");
-	register_cvar("knife_world_model", "model/w_knife.mdl");
+	register_cvar("knife_view_model", "v_knife.mdl");
+	register_cvar("knife_player_model", "p_knife.mdl");
+	register_cvar("knife_world_model", "w_knife.mdl");
 
-	register_cvar("ak_view_model", "model/v_ak47.mdl");
-	register_cvar("ak_player_model", "model/p_ak47.mdl");
-	register_cvar("ak_world_model", "model/w_ak47.mdl");
+	register_cvar("ak_view_model", "v_ak47.mdl");
+	register_cvar("ak_player_model", "p_ak47.mdl");
+	register_cvar("ak_world_model", "w_ak47.mdl");
 
- 	register_cvar("awp_view_model", "model/v_awp.mdl");
-	register_cvar("awp_player_model", "model/p_awp.mdl");
-	register_cvar("awp_world_model", "model/w_awp.mdl");
+ 	register_cvar("awp_view_model", "v_awp.mdl");
+	register_cvar("awp_player_model", "p_awp.mdl");
+	register_cvar("awp_world_model", "w_awp.mdl");
 
-	register_cvar("m4a1_view_model", "model/v_m4a1.mdl");
-	register_cvar("m4a1_player_model", "model/p_m4a1.mdl");
-	register_cvar("m4a1_world_model", "model/w_m4a1.mdl");
+	register_cvar("m4a1_view_model", "v_m4a1.mdl");
+	register_cvar("m4a1_player_model", "p_m4a1.mdl");
+	register_cvar("m4a1_world_model", "w_m4a1.mdl");
 }
 
 GetModel() {
-	new sBuff[512];
+	new sBuff[512], szFile[512];
 	get_cvar_string("knife_view_model", sBuff, charsmax(sBuff));
 	ArrayPushString(g_aModel, sBuff);
+	log_amx(sBuff);
+	ArrayGetString(g_aModel, 0, sBuff, charsmax(sBuff));
+	log_amx(sBuff);
 	get_cvar_string("knife_player_model", sBuff, charsmax(sBuff));
 	ArrayPushString(g_aModel, sBuff);
 	get_cvar_string("knife_world_model", sBuff, charsmax(sBuff));
@@ -94,9 +97,12 @@ GetModel() {
 	get_cvar_string("m4a1_world_model", sBuff, charsmax(sBuff));
 	ArrayPushString(g_aModel, sBuff);
 
-	for(new i = 0; i <= ArraySize(g_aModel); i++) {
-		formatex(sBuff, charsmax(sBuff), "models/Reborn/%s.mdl", ArrayGetString(g_aModel, i, sBuff, charsmax(sBuff)));
-		engfunc(EngFunc_PrecacheModel, sBuff);
+	for(new i = 0; i < ArraySize(g_aModel); i++) {
+		ArrayGetString(g_aModel, i, sBuff, charsmax(sBuff))
+		if(!sBuff[0]) continue;
+		formatex(szFile, charsmax(szFile), "models/Reborn/%s.mdl", sBuff);
+		if(!file_exists(szFile)) continue;
+		engfunc(EngFunc_PrecacheModel, szFile);
 	}
 }
 
@@ -112,7 +118,7 @@ GetMap() {
 	new szCfgDir[64], szCfgFile[128];
 
 	get_localinfo("amxx_configsdir", szCfgDir, charsmax(szCfgDir));
-	formatex(szCfgFile, charsmax(szCfgFile), "%s/reborn/renorn.ini", szCfgDir);
+	formatex(szCfgFile, charsmax(szCfgFile), "%s/reborn/reborn.ini", szCfgDir);
 	while(read_file(szCfgFile, iLine++, szBuffer, charsmax(szBuffer), iLen))
 	{
 		if(!iLen || iLen > 16 || szBuffer[0] == ';') continue;
