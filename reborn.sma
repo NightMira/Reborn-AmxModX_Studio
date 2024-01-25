@@ -1,5 +1,4 @@
 #include <amxmodx>
-#include <reapi>
 #include <fakemeta>
 
 #define FLAG_ACCESS ADMIN_LEVEL_G
@@ -25,7 +24,7 @@ enum _:MODEL {
 }; new Array:g_aModel;
 
 new const GAME_MENU_ID[] = "Show_RebornMenu";
-new g_iMenu_Game;
+new g_iMenu_Game, g_bPluginEnablie = false;
 
 enum _:CVAR {
 	DAMAGE_AK,
@@ -102,9 +101,67 @@ GetModel() {
 public plugin_cfg() {
 	new szCfgDir[64];
 	get_localinfo("amxx_configsdir", szCfgDir, charsmax(szCfgDir));
-	server_cmd("exec %s/reborn.cfg", szCfgDir);
+	server_cmd("exec %s/reborn/reborn.cfg", szCfgDir);
 }
 
 GetMap() {
+	new szBuffer[128], iLine, iLen,
+	szMapName[32], szMapNameToFile[32];
+	new szCfgDir[64], szCfgFile[128];
+
+	get_localinfo("amxx_configsdir", szCfgDir, charsmax(szCfgDir));
+	formatex(szCfgFile, charsmax(szCfgFile), "%s/reborn/renorn.ini", szCfgDir);
+	while(read_file(szCfgFile, iLine++, szBuffer, charsmax(szBuffer), iLen))
+	{
+		if(!iLen || iLen > 16 || szBuffer[0] == ';') continue;
+		copy(szMapNameToFile, charsmax(szMapNameToFile), szBuffer);
+		get_mapname(szMapName, charsmax(szMapName));
+		if(equal(szMapName, szMapNameToFile))
+			g_bPluginEnablie = true;
+	}/*
+
+	new szCfgDir[64], szCfgFile[128];
+	get_localinfo("amxx_configsdir", szCfgDir, charsmax(szCfgDir));
+	formatex(szCfgFile, charsmax(szCfgFile), "%s/reborn/renorn.ini", szCfgDir);
+	switch(file_exists(szCfgFile))
+	{
+		case 0: log_to_file("%s/reborn/log_error.log", "File ^"%s^" not found!", szCfgDir, szCfgFile);
+		case 1: BlockMapList(szCfgFile);
+	}*/
+}
+
+/*
+BlockMapList(szCfgFile) {
+
+	new szBuffer[128], iLine, iLen,
+	szMapName[32], szMapNameToFile[32];
+	while(read_file(szCfgFile, iLine++, szBuffer, charsmax(szBuffer), iLen))
+	{
+		if(!iLen || iLen > 16 || szBuffer[0] == ';') continue;
+		copy(szMapNameToFile, charsmax(szMapNameToFile), szBuffer);
+		get_mapname(szMapName, charsmax(szMapName));
+		if(equal(szMapName, szMapNameToFile))
+			g_bPluginEnablie = true;
+	}
+}
+*/
+
+public plugin_init() {
+	register_plugin(PLUGIN_NAME, VERSION, AUTHOR);
+
+	event_init();
+	menu_init();
+	hamsandwich_init();
+}
+
+event_init() {
 	return;
+}
+
+menu_init() {
+	return;
+}
+
+hamsandwich_init() {
+	return;//RegisterHam(Ham_Player_ResetMaxSpeed, "player", "Ham_PlayerResetMaxSpeed_Post", true);
 }
