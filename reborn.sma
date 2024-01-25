@@ -26,6 +26,8 @@ enum _:MODEL {
 new const GAME_MENU_ID[] = "Show_RebornMenu";
 new g_iMenu_Game, g_bPluginEnablie = false;
 
+new g_bKnifeEnable[MAX_PLAYERS] = false;
+
 enum _:CVAR {
 	DAMAGE_AK,
 	DAMAGE_M4A1,
@@ -159,7 +161,25 @@ event_init() {
 }
 
 menu_init() {
-	return;
+	g_iMenu_Game = register_menuid(GAME_MENU_ID);
+	register_menucmd(g_iMenu_Game, 1024, "Handle_RebornMenu");
+}
+
+Show_RebornMenu(iPlayer) {
+	new szMenu[512], iKeys = (1<<0|1<<2|1<<3|1<<4|1<<5|1<<6|1<<9),
+	iLen = formatex(szMenu, charsmax(szMenu), "\wReborn Меню^n^n");
+
+	iLen += formatex(szMenu[iLen], charsmax(szMenu) - iLen, "1. Нож [%s]^n", g_bKnifeEnable[iPlayer] ? "вкл" : "выкл");
+	iLen += formatex(szMenu[iLen], charsmax(szMenu) - iLen, "2. АК-47");
+	iLen += formatex(szMenu[iLen], charsmax(szMenu) - iLen, "3. AWP^n");
+	iLen += formatex(szMenu[iLen], charsmax(szMenu) - iLen, "4. M4A1^n");
+	iLen += formatex(szMenu[iLen], charsmax(szMenu) - iLen, "5. АК-47+^n");
+	iLen += formatex(szMenu[iLen], charsmax(szMenu) - iLen, "6. AWP+^n");
+	iLen += formatex(szMenu[iLen], charsmax(szMenu) - iLen, "7. M4A1+^n");
+
+	formatex(szMenu[iLen], charsmax(szMenu) - iLen, "^n0. Выход");
+	
+	return show_menu(iPlayer, iKeys, szMenu, -1, GAME_MENU_ID);
 }
 
 hamsandwich_init() {
