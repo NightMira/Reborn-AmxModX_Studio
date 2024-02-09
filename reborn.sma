@@ -1,6 +1,7 @@
 #include <amxmodx>
 #include <fakemeta>
 #include <hamsandwich>
+#include <fun>
 
 #define FLAG_ACCESS ADMIN_LEVEL_G
 
@@ -10,6 +11,10 @@
 
 #define linux_diff_player 5
 #define m_pActiveItem 373
+
+#define AK_KEY 123419
+#define AWP_KEY 42131
+#define M4A1_KEY 87986
 
 enum _:MODEL {
 	KNIFE_VIEW_MODEL,
@@ -27,15 +32,27 @@ enum _:MODEL {
 	MAX_MODEL
 }; new Array:g_aModel;
 
+new g_sWeaponName[][] =  {
+	"weapon_knife",
+	"weapon_ak47",
+	"weapon_awp",
+	"weapon_m4a1"
+};
+
 new const GAME_MENU_ID[] = "Show_RebornMenu";
-new g_iMenu_Game, g_bPluginEnablie = false;
+new g_iMenu_Game, g_bPluginEnablie = true;
 
 new g_bKnifeEnable[MAX_PLAYERS] = false;
+new g_iRoundCount = 0;
 
 enum _:CVAR {
 	DAMAGE_AK,
 	DAMAGE_M4A1,
-	DAMAGE_AWP
+	DAMAGE_AWP,
+	ROUND_TO_ACTIVATE,
+	ROUND_FOR_AK,
+	ROUND_FOR_M4A1,
+	ROUND_FOR_AWP
 }; new g_iCvar[CVAR];
 
 public plugin_precache() {
@@ -52,6 +69,11 @@ CvarInit() {
 	g_iCvar[DAMAGE_AK] = register_cvar("rb_damage_ak", "2.0");
 	g_iCvar[DAMAGE_AWP] = register_cvar("rb_damage_awp", "2.0");
 	g_iCvar[DAMAGE_M4A1] = register_cvar("rb_damage_m4a1", "2.0");
+
+	g_iCvar[ROUND_TO_ACTIVATE] = register_cvar("rb_round_active", "2");
+	g_iCvar[ROUND_FOR_AK] = register_cvar("rb_round_ak", "3");
+	g_iCvar[ROUND_FOR_M4A1] = register_cvar("rb_round_m4a1", "3");
+	g_iCvar[ROUND_FOR_AWP] = register_cvar("rb_round_awp", "3");
 
 	register_cvar("knife_view_model", "v_knife.mdl");
 	register_cvar("knife_player_model", "p_knife.mdl");
@@ -106,6 +128,7 @@ GetModel() {
 		formatex(szFile, charsmax(szFile), "models/Reborn/%s.mdl", sBuff);
 		if(!file_exists(szFile)) continue;
 		engfunc(EngFunc_PrecacheModel, szFile);
+		ArraySetString(g_aModel, i, szFile);
 	}
 }
 
@@ -128,7 +151,7 @@ GetMap() {
 		copy(szMapNameToFile, charsmax(szMapNameToFile), szBuffer);
 		get_mapname(szMapName, charsmax(szMapName));
 		if(equal(szMapName, szMapNameToFile))
-			g_bPluginEnablie = true;
+			g_bPluginEnablie = false;
 	}/*
 
 	new szCfgDir[64], szCfgFile[128];
@@ -159,34 +182,112 @@ BlockMapList(szCfgFile) {
 
 public plugin_init() {
 	register_plugin(PLUGIN_NAME, VERSION, AUTHOR);
-	if(g_bPluginEnablie) set_fail_state("Block Map");
 	event_init();
 	menu_init();
 	hamsandwich_init();
 }
 
 event_init() {
-	return;
+	register_logevent("LogEvent_RoundStart", 2, "1=Round_Start");
+	register_forward(FM_SetModel, "fw_SetModel");
 }
 
+public LogEvent_RoundStart() {
+	g_iRoundCount++;
+}
+
+public fw_SetModel(entity, model[]) {
+	if (!pev_valid(entity)) 
+		return FMRES_IGNORED;
+
+	new className[33], WeaponModel[64];//WeaponName[33];
+	pev(entity, pev_classname, className, 32);
+	//get_weaponname(entity, WeaponName, 32);
+	
+	if(equal(className, "weaponbox") || equal(className, "armoury_entity") || equal(className, "grenade"))
+	{
+		log_amx("SetModel 2 %i", pev(entity, pev_impulse));
+		switch(pev(entity, pev_impulse)) {
+			case AK_KEY: {
+				log_amx("SetModel 3");
+				ArrayGetString(g_aModel, AK_WORLD_MODEL, WeaponModel, 63);
+				log_amx("SetModel 4");
+				if(!file_exists(WeaponModel)) return FMRES_IGNORED;
+				log_amx("SetModel 5");
+				engfunc(EngFunc_SetModel, entity, WeaponModel);
+		   		return FMRES_SUPERCEDE;
+			}
+			case AWP_KEY: {
+				ArrayGetString(g_aModel, AWP_WORLD_MODEL, WeaponModel, 63);
+				if(!file_exists(WeaponModel)) return FMRES_IGNORED;
+				engfunc(EngFunc_SetModel, entity, WeaponModel);
+		   		return FMRES_SUPERCEDE;
+			}
+			case M4A1_KEY: {
+				ArrayGetString(g_aModel, M4A1_WORLD_MODEL, WeaponModel, 63);
+				if(!file_exists(WeaponModel)) return FMRES_IGNORED;
+				engfunc(EngFunc_SetModel, entity, WeaponModel);
+		   		return FMRES_SUPERCEDE;
+			}
+		}
+		/*if(equal(WeaponName, "weapon_ak47") || equal(WeaponName, "weapon_awp"), equal(WeaponName, "weapon_m4a1")) {
+			if(equal(WeaponName[8], 'a') && equal(WeaponName[9], 'k')) {
+				engfunc(EngFunc_SetModel, entity, AK_WORLD_MODEL);
+		   		return FMRES_SUPERCEDE;
+			}
+			if(equal(WeaponName[8], 'a') && equal(WeaponName[9], 'w')) {
+				engfunc(EngFunc_SetModel, entity, AWP_WORLD_MODEL);
+		   		return FMRES_SUPERCEDE;
+			}
+			if(equal(WeaponName[8], 'm') && equal(WeaponName[9], '4')) {
+				engfunc(EngFunc_SetModel, entity, M4A1_WORLD_MODEL);
+		   		return FMRES_SUPERCEDE;
+			}
+		}*/
+	}
+	return FMRES_IGNORED
+}
 menu_init() {
 	g_iMenu_Game = register_menuid(GAME_MENU_ID);
 	register_menucmd(g_iMenu_Game, 1023, "Handle_RebornMenu");
 }
 
 Show_RebornMenu(iPlayer) {
-	new szMenu[512], iKeys = (1<<0|1<<2|1<<3|1<<4|1<<5|1<<6|1<<9),
+	new szMenu[512], iKeys = (1<<9),
 	iLen = formatex(szMenu, charsmax(szMenu), "\wReborn Меню^n^n");
+	if(g_iRoundCount >= get_pcvar_num(g_iCvar[ROUND_TO_ACTIVATE])) {
+		iLen += formatex(szMenu[iLen], charsmax(szMenu) - iLen, "\y1. Нож [%s]^n", g_bKnifeEnable[iPlayer] ? "Вкл" : "Выкл");
+		iLen += formatex(szMenu[iLen], charsmax(szMenu) - iLen, "\y2. АК-47^n");
+		iLen += formatex(szMenu[iLen], charsmax(szMenu) - iLen, "\y3. AWP^n");
+		iLen += formatex(szMenu[iLen], charsmax(szMenu) - iLen, "\y4. M4A1^n");
+		iKeys |= (1<<0|1<<1|1<<2|1<<3);
+		if(g_iRoundCount >= get_pcvar_num(g_iCvar[ROUND_FOR_AK])) {
+			iLen += formatex(szMenu[iLen], charsmax(szMenu) - iLen, "\y5. АК-47+^n");
+			iKeys |= (1<<4);
+		}
+		else iLen += formatex(szMenu[iLen], charsmax(szMenu) - iLen, "\d5. АК-47+^n");
+		if(g_iRoundCount >= get_pcvar_num(g_iCvar[ROUND_FOR_AWP])) {
+			iLen += formatex(szMenu[iLen], charsmax(szMenu) - iLen, "\y6. AWP+^n");
+			iKeys |= (1<<5);
+		}
+		else iLen += formatex(szMenu[iLen], charsmax(szMenu) - iLen, "\d6. АWP+^n");
+		if(g_iRoundCount >= get_pcvar_num(g_iCvar[ROUND_FOR_M4A1])) {
+			iLen += formatex(szMenu[iLen], charsmax(szMenu) - iLen, "\y7. M4A1+^n");
+			iKeys |= (1<<6);
+		}
+		else iLen += formatex(szMenu[iLen], charsmax(szMenu) - iLen, "\d7. M4A1+^n");
+	}
+	else {
+		iLen += formatex(szMenu[iLen], charsmax(szMenu) - iLen, "\d1. Нож [%s]^n", g_bKnifeEnable[iPlayer] ? "Вкл" : "Выкл");
+		iLen += formatex(szMenu[iLen], charsmax(szMenu) - iLen, "\d2. AK-47^n");
+		iLen += formatex(szMenu[iLen], charsmax(szMenu) - iLen, "\d3. AWP^n");
+		iLen += formatex(szMenu[iLen], charsmax(szMenu) - iLen, "\d4. M4A1^n");
+		iLen += formatex(szMenu[iLen], charsmax(szMenu) - iLen, "\d5. АК-47+^n");
+		iLen += formatex(szMenu[iLen], charsmax(szMenu) - iLen, "\d6. АWP+^n");
+		iLen += formatex(szMenu[iLen], charsmax(szMenu) - iLen, "\d7. M4A1+^n");
+	}
 
-	iLen += formatex(szMenu[iLen], charsmax(szMenu) - iLen, "1. Нож [%s]^n", g_bKnifeEnable[iPlayer] ? "вкл" : "выкл");
-	iLen += formatex(szMenu[iLen], charsmax(szMenu) - iLen, "2. АК-47");
-	iLen += formatex(szMenu[iLen], charsmax(szMenu) - iLen, "3. AWP^n");
-	iLen += formatex(szMenu[iLen], charsmax(szMenu) - iLen, "4. M4A1^n");
-	iLen += formatex(szMenu[iLen], charsmax(szMenu) - iLen, "5. АК-47+^n");
-	iLen += formatex(szMenu[iLen], charsmax(szMenu) - iLen, "6. AWP+^n");
-	iLen += formatex(szMenu[iLen], charsmax(szMenu) - iLen, "7. M4A1+^n");
-
-	formatex(szMenu[iLen], charsmax(szMenu) - iLen, "^n0. Выход");
+	formatex(szMenu[iLen], charsmax(szMenu) - iLen, "^n\r0. Выход");
 	
 	return show_menu(iPlayer, iKeys, szMenu, -1, GAME_MENU_ID);
 }
@@ -195,16 +296,53 @@ public Handle_RebornMenu(iPlayer, iKey) {
 	switch(iKey) {
 		case 0: {
 			g_bKnifeEnable[iPlayer] = !g_bKnifeEnable[iPlayer];
-			
-			new iActiveItem = get_pdata_cbase(iPlayer, m_pActiveItem, linux_diff_player);
-			if(iActiveItem > 0) ExecuteHamB(Ham_Item_Deploy, iActiveItem);
+			if(get_user_weapon(iPlayer) == CSW_KNIFE) {
+				new iActiveItem = get_pdata_cbase(iPlayer, m_pActiveItem, linux_diff_player);
+				if(iActiveItem > 0) ExecuteHamB(Ham_Item_Deploy, iActiveItem);
+			}
+		}
+		case 1: {
+			give_item(iPlayer, "weapon_ak47");
+		}
+		case 2: {
+			give_item(iPlayer, "weapon_awp");
+		}
+		case 3: {
+			give_item(iPlayer, "weapon_m4a1");
+		}
+		case 4: {
+			new iWeapon = give_item(iPlayer, "weapon_ak47");
+			if(pev_valid(iWeapon)) {
+				set_pev(iWeapon, pev_impulse, AK_KEY);
+				new iActiveItem = get_pdata_cbase(iPlayer, m_pActiveItem, linux_diff_player);
+				if(iActiveItem > 0) ExecuteHamB(Ham_Item_Deploy, iActiveItem);
+			}
 		}
 	}
 	return PLUGIN_HANDLED;
 }
 
 hamsandwich_init() {
-	return;//RegisterHam(Ham_Player_ResetMaxSpeed, "player", "Ham_PlayerResetMaxSpeed_Post", true);
+	for(new i = 0; i < 4; i++) {
+		RegisterHam(Ham_Item_Deploy, g_sWeaponName[i], "deploy_weapon", 1);
+	}
+}
+
+public deploy_weapon(wpn) {
+	static id; id = get_pdata_cbase(wpn, 41, 4);
+
+	switch(pev(wpn, pev_impulse)) {
+		case AK_KEY: {
+			log_amx("deploy_weapon %i", pev(wpn, pev_impulse));
+			new sBuff[64]; 
+			ArrayGetString(g_aModel, AK_VIEW_MODEL, sBuff, 63)
+			if(!file_exists(sBuff)) return;
+			set_pev(id, pev_viewmodel2, sBuff);
+			ArrayGetString(g_aModel, AK_PLAYER_MODEL, sBuff, 63)
+			if(!file_exists(sBuff)) return;
+			set_pev(id, pev_weaponmodel2, sBuff)
+		}
+	}
 }
 
 public plugin_natives() {
@@ -216,6 +354,6 @@ public plugin_natives() {
 
 	new iPlayer = get_param(arg_player);
 	new iFlags = get_user_flags(iPlayer);
-	if(iFlags & FLAG_ACCESS) return Show_RebornMenu(iPlayer);
-	return true;
+	if(iFlags & FLAG_ACCESS && g_bPluginEnablie) return Show_RebornMenu(iPlayer);
+	return 0;
 }
