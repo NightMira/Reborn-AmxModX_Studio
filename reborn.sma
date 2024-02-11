@@ -96,7 +96,7 @@ GetModel() {
 	new szCfgDir[64];
 	get_localinfo("amxx_configsdir", szCfgDir, charsmax(szCfgDir));
 	server_cmd("exec %s/reborn/reborn.cfg", szCfgDir);
-	
+
 	new sBuff[512], szFile[512];
 	get_cvar_string("knife_view_model", sBuff, charsmax(sBuff));
 	ArrayPushString(g_aModel, sBuff);
@@ -187,64 +187,83 @@ public plugin_init() {
 
 event_init() {
 	register_logevent("LogEvent_RoundStart", 2, "1=Round_Start");
-	register_forward(FM_SetModel, "fw_SetModel");
+	register_forward(FM_SetModel, "fw_SetModel_Post", 1);
+	register_forward(FM_SetModel, "fw_SetModel_Pre", 0);
 }
 
 public LogEvent_RoundStart() {
 	g_iRoundCount++;
 }
 
-public fw_SetModel(entity, model[]) {
+public fw_SetModel_Post(entity, model[]) {
 	if (!pev_valid(entity)) 
 		return FMRES_IGNORED;
 
-	new className[33], WeaponModel[64];//WeaponName[33];
+	new className[33]; 
 	pev(entity, pev_classname, className, 32);
-	//get_weaponname(entity, WeaponName, 32);
 	
-	if(equal(className, "weaponbox") || equal(className, "armoury_entity") || equal(className, "grenade"))
+	if(equal(className, "weaponbox"))
 	{
-		log_amx("SetModel 2 %i", pev(entity, pev_impulse));
-		switch(pev(entity, pev_impulse)) {
-			case AK_KEY: {
-				log_amx("SetModel 3");
-				ArrayGetString(g_aModel, AK_WORLD_MODEL, WeaponModel, 63);
-				log_amx("SetModel 4");
-				if(!file_exists(WeaponModel)) return FMRES_IGNORED;
-				log_amx("SetModel 5");
-				engfunc(EngFunc_SetModel, entity, WeaponModel);
-		   		return FMRES_SUPERCEDE;
-			}
-			case AWP_KEY: {
-				ArrayGetString(g_aModel, AWP_WORLD_MODEL, WeaponModel, 63);
-				if(!file_exists(WeaponModel)) return FMRES_IGNORED;
-				engfunc(EngFunc_SetModel, entity, WeaponModel);
-		   		return FMRES_SUPERCEDE;
-			}
-			case M4A1_KEY: {
-				ArrayGetString(g_aModel, M4A1_WORLD_MODEL, WeaponModel, 63);
-				if(!file_exists(WeaponModel)) return FMRES_IGNORED;
-				engfunc(EngFunc_SetModel, entity, WeaponModel);
-		   		return FMRES_SUPERCEDE;
+		static id; id = pev(entity, pev_owner)
+		if(pev(id, pev_iuser2)) {
+			switch(pev(id, pev_iuser2)) {
+				case AK_KEY: {
+					set_pev(entity, pev_impulse, AK_KEY);
+					return FMRES_SUPERCEDE;
+				}
+				case AWP_KEY: {
+					set_pev(entity, pev_impulse, AWP_KEY);
+					return FMRES_SUPERCEDE;
+				}
+				case M4A1_KEY: {
+					set_pev(entity, pev_impulse, M4A1_KEY);
+					return FMRES_SUPERCEDE;
+				}
 			}
 		}
-		/*if(equal(WeaponName, "weapon_ak47") || equal(WeaponName, "weapon_awp"), equal(WeaponName, "weapon_m4a1")) {
-			if(equal(WeaponName[8], 'a') && equal(WeaponName[9], 'k')) {
-				engfunc(EngFunc_SetModel, entity, AK_WORLD_MODEL);
-		   		return FMRES_SUPERCEDE;
-			}
-			if(equal(WeaponName[8], 'a') && equal(WeaponName[9], 'w')) {
-				engfunc(EngFunc_SetModel, entity, AWP_WORLD_MODEL);
-		   		return FMRES_SUPERCEDE;
-			}
-			if(equal(WeaponName[8], 'm') && equal(WeaponName[9], '4')) {
-				engfunc(EngFunc_SetModel, entity, M4A1_WORLD_MODEL);
-		   		return FMRES_SUPERCEDE;
-			}
-		}*/
 	}
-	return FMRES_IGNORED
+	return FMRES_IGNORED;
 }
+
+public fw_SetModel_Pre(entity, model[]) {
+	if (!pev_valid(entity)) 
+		return FMRES_IGNORED;
+
+	new className[33], WeaponModel[64]; 
+	pev(entity, pev_classname, className, 32);
+	
+	if(equal(className, "weaponbox"))
+	{
+		static id; id = pev(entity, pev_owner);
+		if(pev(entity, pev_impulse)) {
+			switch(pev(id, pev_iuser2)) {
+				case AK_KEY: {
+					ArrayGetString(g_aModel, AK_WORLD_MODEL, WeaponModel, 63);
+					if(!file_exists(WeaponModel)) return FMRES_IGNORED;
+					engfunc(EngFunc_SetModel, entity, WeaponModel);
+					set_pev(id, pev_iuser2, 0);
+					return FMRES_SUPERCEDE;
+				}
+				case AWP_KEY: {
+					ArrayGetString(g_aModel, AWP_WORLD_MODEL, WeaponModel, 63);
+					if(!file_exists(WeaponModel)) return FMRES_IGNORED;
+					engfunc(EngFunc_SetModel, entity, WeaponModel);
+					set_pev(id, pev_iuser2, 0);
+					return FMRES_SUPERCEDE;
+				}
+				case M4A1_KEY: {
+					ArrayGetString(g_aModel, M4A1_WORLD_MODEL, WeaponModel, 63);
+					if(!file_exists(WeaponModel)) return FMRES_IGNORED;
+					engfunc(EngFunc_SetModel, entity, WeaponModel);
+					set_pev(id, pev_iuser2, 0);
+					return FMRES_SUPERCEDE;
+				}
+			}
+		}
+	}
+	return FMRES_IGNORED;
+}
+
 menu_init() {
 	g_iMenu_Game = register_menuid(GAME_MENU_ID);
 	register_menucmd(g_iMenu_Game, 1023, "Handle_RebornMenu");
@@ -316,6 +335,22 @@ public Handle_RebornMenu(iPlayer, iKey) {
 				if(iActiveItem > 0) ExecuteHamB(Ham_Item_Deploy, iActiveItem);
 			}
 		}
+		case 5: {
+			new iWeapon = give_item(iPlayer, "weapon_awp");
+			if(pev_valid(iWeapon)) {
+				set_pev(iWeapon, pev_impulse, AWP_KEY);
+				new iActiveItem = get_pdata_cbase(iPlayer, m_pActiveItem, linux_diff_player);
+				if(iActiveItem > 0) ExecuteHamB(Ham_Item_Deploy, iActiveItem);
+			}
+		}
+		case 6: {
+			new iWeapon = give_item(iPlayer, "weapon_m4a1");
+			if(pev_valid(iWeapon)) {
+				set_pev(iWeapon, pev_impulse, M4A1_KEY);
+				new iActiveItem = get_pdata_cbase(iPlayer, m_pActiveItem, linux_diff_player);
+				if(iActiveItem > 0) ExecuteHamB(Ham_Item_Deploy, iActiveItem);
+			}
+		}
 	}
 	return PLUGIN_HANDLED;
 }
@@ -328,10 +363,9 @@ hamsandwich_init() {
 
 public deploy_weapon(wpn) {
 	static id; id = get_pdata_cbase(wpn, 41, 4);
-
+	
 	switch(pev(wpn, pev_impulse)) {
 		case AK_KEY: {
-			log_amx("deploy_weapon %i", pev(wpn, pev_impulse));
 			new sBuff[64]; 
 			ArrayGetString(g_aModel, AK_VIEW_MODEL, sBuff, 63)
 			if(!file_exists(sBuff)) return;
@@ -339,6 +373,27 @@ public deploy_weapon(wpn) {
 			ArrayGetString(g_aModel, AK_PLAYER_MODEL, sBuff, 63)
 			if(!file_exists(sBuff)) return;
 			set_pev(id, pev_weaponmodel2, sBuff)
+			set_pev(id, pev_iuser2, AK_KEY);
+		}
+		case AWP_KEY: {
+			new sBuff[64]; 
+			ArrayGetString(g_aModel, AWP_VIEW_MODEL, sBuff, 63)
+			if(!file_exists(sBuff)) return;
+			set_pev(id, pev_viewmodel2, sBuff);
+			ArrayGetString(g_aModel, AWP_PLAYER_MODEL, sBuff, 63)
+			if(!file_exists(sBuff)) return;
+			set_pev(id, pev_weaponmodel2, sBuff)
+			set_pev(id, pev_iuser2, AWP_KEY);
+		}
+		case M4A1_KEY: {
+			new sBuff[64]; 
+			ArrayGetString(g_aModel, M4A1_VIEW_MODEL, sBuff, 63)
+			if(!file_exists(sBuff)) return;
+			set_pev(id, pev_viewmodel2, sBuff);
+			ArrayGetString(g_aModel, M4A1_PLAYER_MODEL, sBuff, 63)
+			if(!file_exists(sBuff)) return;
+			set_pev(id, pev_weaponmodel2, sBuff)
+			set_pev(id, pev_iuser2, M4A1_KEY);
 		}
 	}
 }
