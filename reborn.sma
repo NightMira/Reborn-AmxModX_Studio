@@ -93,6 +93,10 @@ CvarInit() {
 }
 
 GetModel() {
+	new szCfgDir[64];
+	get_localinfo("amxx_configsdir", szCfgDir, charsmax(szCfgDir));
+	server_cmd("exec %s/reborn/reborn.cfg", szCfgDir);
+	
 	new sBuff[512], szFile[512];
 	get_cvar_string("knife_view_model", sBuff, charsmax(sBuff));
 	ArrayPushString(g_aModel, sBuff);
@@ -130,12 +134,6 @@ GetModel() {
 		engfunc(EngFunc_PrecacheModel, szFile);
 		ArraySetString(g_aModel, i, szFile);
 	}
-}
-
-public plugin_cfg() {
-	new szCfgDir[64];
-	get_localinfo("amxx_configsdir", szCfgDir, charsmax(szCfgDir));
-	server_cmd("exec %s/reborn/reborn.cfg", szCfgDir);
 }
 
 GetMap() {
