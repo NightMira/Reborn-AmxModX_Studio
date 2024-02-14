@@ -6,15 +6,19 @@
 #define FLAG_ACCESS ADMIN_LEVEL_G
 
 #define PLUGIN_NAME "Reborn"
-#define VERSION "0.1"
+#define VERSION "1.0"
 #define AUTHOR "jbengine"
 
 #define linux_diff_player 5
 #define m_pActiveItem 373
 
+#define KNIFE_KEY 76543
 #define AK_KEY 123419
 #define AWP_KEY 42131
 #define M4A1_KEY 87986
+
+// 1.8.2
+#define MAX_PLAYERS 32
 
 enum _:MODEL {
 	KNIFE_VIEW_MODEL,
@@ -57,13 +61,13 @@ enum _:CVAR {
 
 public plugin_precache() {
 	g_aModel = ArrayCreate(64, 0);
-	register_clcmd("test", "fn_test");
+	//register_clcmd("test", "fn_test");
 	CvarInit();
 	GetModel();
 	GetMap();
 }
 
-public fn_test(iPlayer) return Show_RebornMenu(iPlayer);
+//public fn_test(iPlayer) return Show_RebornMenu(iPlayer);
 
 CvarInit() {
 	g_iCvar[DAMAGE_AK] = register_cvar("rb_damage_ak", "2.0");
@@ -161,22 +165,6 @@ GetMap() {
 		case 1: BlockMapList(szCfgFile);
 	}*/
 }
-
-/*
-BlockMapList(szCfgFile) {
-
-	new szBuffer[128], iLine, iLen,
-	szMapName[32], szMapNameToFile[32];
-	while(read_file(szCfgFile, iLine++, szBuffer, charsmax(szBuffer), iLen))
-	{
-		if(!iLen || iLen > 16 || szBuffer[0] == ';') continue;
-		copy(szMapNameToFile, charsmax(szMapNameToFile), szBuffer);
-		get_mapname(szMapName, charsmax(szMapName));
-		if(equal(szMapName, szMapNameToFile))
-			g_bPluginEnablie = true;
-	}
-}
-*/
 
 public plugin_init() {
 	register_plugin(PLUGIN_NAME, VERSION, AUTHOR);
@@ -313,53 +301,81 @@ public Handle_RebornMenu(iPlayer, iKey) {
 	switch(iKey) {
 		case 0: {
 			g_bKnifeEnable[iPlayer] = !g_bKnifeEnable[iPlayer];
+			client_cmd(iPlayer, "knife");
 			if(get_user_weapon(iPlayer) == CSW_KNIFE) {
 				new iActiveItem = get_pdata_cbase(iPlayer, m_pActiveItem, linux_diff_player);
 				if(iActiveItem > 0) ExecuteHamB(Ham_Item_Deploy, iActiveItem);
 			}
+			return Show_RebornMenu(iPlayer);
 		}
 		case 1: {
 			give_item(iPlayer, "weapon_ak47");
+			give_item(iPlayer, "ammo_762nato");
+			give_item(iPlayer, "ammo_762nato");
+			give_item(iPlayer, "ammo_762nato");
+			return Show_RebornMenu(iPlayer);
 		}
 		case 2: {
 			give_item(iPlayer, "weapon_awp");
+			give_item(iPlayer, "ammp_338magnum");
+			give_item(iPlayer, "ammp_338magnum");
+			give_item(iPlayer, "ammp_338magnum");
+			return Show_RebornMenu(iPlayer);
 		}
 		case 3: {
 			give_item(iPlayer, "weapon_m4a1");
+			give_item(iPlayer, "ammo_556nato");
+			give_item(iPlayer, "ammo_556nato");
+			give_item(iPlayer, "ammo_556nato");
+			return Show_RebornMenu(iPlayer);
 		}
 		case 4: {
 			new iWeapon = give_item(iPlayer, "weapon_ak47");
+			give_item(iPlayer, "ammo_762nato");
+			give_item(iPlayer, "ammo_762nato");
+			give_item(iPlayer, "ammo_762nato");
 			if(pev_valid(iWeapon)) {
 				set_pev(iWeapon, pev_impulse, AK_KEY);
 				new iActiveItem = get_pdata_cbase(iPlayer, m_pActiveItem, linux_diff_player);
 				if(iActiveItem > 0) ExecuteHamB(Ham_Item_Deploy, iActiveItem);
 			}
+			return Show_RebornMenu(iPlayer);
 		}
 		case 5: {
 			new iWeapon = give_item(iPlayer, "weapon_awp");
+			give_item(iPlayer, "ammp_338magnum");
+			give_item(iPlayer, "ammp_338magnum");
+			give_item(iPlayer, "ammp_338magnum");
 			if(pev_valid(iWeapon)) {
 				set_pev(iWeapon, pev_impulse, AWP_KEY);
 				new iActiveItem = get_pdata_cbase(iPlayer, m_pActiveItem, linux_diff_player);
 				if(iActiveItem > 0) ExecuteHamB(Ham_Item_Deploy, iActiveItem);
 			}
+			return Show_RebornMenu(iPlayer);
 		}
 		case 6: {
 			new iWeapon = give_item(iPlayer, "weapon_m4a1");
+			give_item(iPlayer, "ammo_556nato");
+			give_item(iPlayer, "ammo_556nato");
+			give_item(iPlayer, "ammo_556nato");
+			
 			if(pev_valid(iWeapon)) {
 				set_pev(iWeapon, pev_impulse, M4A1_KEY);
 				new iActiveItem = get_pdata_cbase(iPlayer, m_pActiveItem, linux_diff_player);
 				if(iActiveItem > 0) ExecuteHamB(Ham_Item_Deploy, iActiveItem);
 			}
+			return Show_RebornMenu(iPlayer);
 		}
 	}
 	return PLUGIN_HANDLED;
 }
 
 hamsandwich_init() {
-	for(new i = 0; i < 4; i++) {
+	for(new i = 1; i < 4; i++) {
 		RegisterHam(Ham_Item_Deploy, g_sWeaponName[i], "deploy_weapon", 1);
-		RegisterHam(Ham_TakeDamage, "player", "hook_TakeDamage")
 	}
+	RegisterHam(Ham_TakeDamage, "player", "hook_TakeDamage")
+	RegisterHam(Ham_Item_Deploy, g_sWeaponName[0], "deploy_knife", 1);
 }
 
 public hook_TakeDamage(victim, inflictor, attacker, Float:damage, damage_type) {
@@ -414,6 +430,20 @@ public deploy_weapon(wpn) {
 			set_pev(id, pev_weaponmodel2, sBuff)
 			set_pev(id, pev_iuser2, M4A1_KEY);
 		}
+	}
+}
+
+public deploy_knife(wpn) {
+	static id; id = get_pdata_cbase(wpn, 41, 4);
+
+	if(g_bKnifeEnable[id]) {
+		new sBuff[64]; 
+		ArrayGetString(g_aModel, KNIFE_VIEW_MODEL, sBuff, 63)
+		if(!file_exists(sBuff)) return;
+		set_pev(id, pev_viewmodel2, sBuff);
+		ArrayGetString(g_aModel, KNIFE_PLAYER_MODEL, sBuff, 63)
+		if(!file_exists(sBuff)) return;
+		set_pev(id, pev_weaponmodel2, sBuff)
 	}
 }
 
