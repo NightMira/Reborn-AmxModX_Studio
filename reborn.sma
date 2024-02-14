@@ -270,7 +270,7 @@ menu_init() {
 }
 
 Show_RebornMenu(iPlayer) {
-	new szMenu[512], iKeys = (1<<9),
+  	new szMenu[512], iKeys = (1<<9),
 	iLen = formatex(szMenu, charsmax(szMenu), "\wReborn Меню^n^n");
 	if(g_iRoundCount >= get_pcvar_num(g_iCvar[ROUND_TO_ACTIVATE])) {
 		iLen += formatex(szMenu[iLen], charsmax(szMenu) - iLen, "\y1. Нож [%s]^n", g_bKnifeEnable[iPlayer] ? "Вкл" : "Выкл");
@@ -358,7 +358,26 @@ public Handle_RebornMenu(iPlayer, iKey) {
 hamsandwich_init() {
 	for(new i = 0; i < 4; i++) {
 		RegisterHam(Ham_Item_Deploy, g_sWeaponName[i], "deploy_weapon", 1);
+		RegisterHam(Ham_TakeDamage, "player", "hook_TakeDamage")
 	}
+}
+
+public hook_TakeDamage(victim, inflictor, attacker, Float:damage, damage_type) {
+	new Gun = get_user_weapon(attacker)
+	if(Gun == CSW_AK47 && pev(attacker, pev_impulse) == AK_KEY)
+	{
+		SetHamParamFloat(4, damage*get_pcvar_num(g_iCvar[DAMAGE_AK]));
+	}
+	if(Gun == CSW_M4A1 && pev(attacker, pev_impulse) == M4A1_KEY)
+	{
+		SetHamParamFloat(4, damage*get_pcvar_num(g_iCvar[DAMAGE_M4A1]));
+	}
+	if(Gun == CSW_AWP && pev(attacker, pev_impulse) == AWP_KEY)
+	{
+		SetHamParamFloat(4, damage*get_pcvar_num(g_iCvar[DAMAGE_AWP]));
+	}
+
+	return HAM_IGNORED;
 }
 
 public deploy_weapon(wpn) {
