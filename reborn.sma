@@ -1,4 +1,5 @@
 #include <amxmodx>
+#include <cstrike>
 #include <fakemeta>
 #include <hamsandwich>
 #include <fun>
@@ -21,20 +22,20 @@
 #define MAX_PLAYERS 32
 
 enum _:MODEL {
-	KNIFE_VIEW_MODEL,
-	KNIFE_PLAYER_MODEL,
-	KNIFE_WORLD_MODEL,
-	AK_VIEW_MODEL,
-	AK_PLAYER_MODEL,
-	AK_WORLD_MODEL,
-	AWP_VIEW_MODEL,
-	AWP_PLAYER_MODEL,
-	AWP_WORLD_MODEL,
-	M4A1_VIEW_MODEL,
-	M4A1_PLAYER_MODEL,
-	M4A1_WORLD_MODEL,
+	KNIFE_VIEW_MODEL[512],
+	KNIFE_PLAYER_MODEL[512],
+	KNIFE_WORLD_MODEL[512],
+	AK_VIEW_MODEL[512],
+	AK_PLAYER_MODEL[512],
+	AK_WORLD_MODEL[512],
+	AWP_VIEW_MODEL[512],
+	AWP_PLAYER_MODEL[512],
+	AWP_WORLD_MODEL[512],
+	M4A1_VIEW_MODEL[512],
+	M4A1_PLAYER_MODEL[512],
+	M4A1_WORLD_MODEL[512],
 	MAX_MODEL
-}; new Array:g_aModel;
+}; new g_aModel[MAX_MODEL];
 
 new g_sWeaponName[][] =  {
 	"weapon_knife",
@@ -60,7 +61,7 @@ enum _:CVAR {
 }; new g_iCvar[CVAR];
 
 public plugin_precache() {
-	g_aModel = ArrayCreate(64, 0);
+	//g_aModel = ArrayCreate(64, 0);
 	register_clcmd("test", "fn_test");
 	CvarInit();
 	GetModel();
@@ -79,21 +80,21 @@ CvarInit() {
 	g_iCvar[ROUND_FOR_M4A1] = register_cvar("rb_round_m4a1", "3");
 	g_iCvar[ROUND_FOR_AWP] = register_cvar("rb_round_awp", "3");
 
-	register_cvar("knife_view_model", "v_knife.mdl");
-	register_cvar("knife_player_model", "p_knife.mdl");
-	register_cvar("knife_world_model", "w_knife.mdl");
+	register_cvar("knife_view_model", "v_knife");
+	register_cvar("knife_player_model", "p_knife");
+	register_cvar("knife_world_model", "w_knife");
 
-	register_cvar("ak_view_model", "v_ak47.mdl");
-	register_cvar("ak_player_model", "p_ak47.mdl");
-	register_cvar("ak_world_model", "w_ak47.mdl");
+	register_cvar("ak_view_model", "v_ak47");
+	register_cvar("ak_player_model", "p_ak47");
+	register_cvar("ak_world_model", "w_ak47");
 
- 	register_cvar("awp_view_model", "v_awp.mdl");
-	register_cvar("awp_player_model", "p_awp.mdl");
-	register_cvar("awp_world_model", "w_awp.mdl");
+ 	register_cvar("awp_view_model", "v_awp");
+	register_cvar("awp_player_model", "p_awp");
+	register_cvar("awp_world_model", "w_awp");
 
-	register_cvar("m4a1_view_model", "v_m4a1.mdl");
-	register_cvar("m4a1_player_model", "p_m4a1.mdl");
-	register_cvar("m4a1_world_model", "w_m4a1.mdl");
+	register_cvar("m4a1_view_model", "v_m4a1");
+	register_cvar("m4a1_player_model", "p_m4a1");
+	register_cvar("m4a1_world_model", "w_m4a1");
 }
 
 GetModel() {
@@ -103,41 +104,125 @@ GetModel() {
 
 	new sBuff[512], szFile[512];
 	get_cvar_string("knife_view_model", sBuff, charsmax(sBuff));
-	ArrayPushString(g_aModel, sBuff);
+	if(sBuff[0]) {	
+		formatex(szFile, charsmax(szFile), "models/Reborn/%s.mdl", sBuff);
+		if(file_exists(szFile)) {
+			engfunc(EngFunc_PrecacheModel, szFile);
+			copy(g_aModel[KNIFE_VIEW_MODEL], charsmax(g_aModel[KNIFE_VIEW_MODEL]), szFile);
+		}
+	}
+	//ArrayPushString(g_aModel, sBuff);
 	get_cvar_string("knife_player_model", sBuff, charsmax(sBuff));
-	ArrayPushString(g_aModel, sBuff);
+	if(sBuff[0]) {	
+		formatex(szFile, charsmax(szFile), "models/Reborn/%s.mdl", sBuff);
+		if(file_exists(szFile)) {
+			engfunc(EngFunc_PrecacheModel, szFile);
+			copy(g_aModel[KNIFE_PLAYER_MODEL], charsmax(g_aModel[KNIFE_PLAYER_MODEL]), szFile);
+		}
+	}
+	//ArrayPushString(g_aModel, sBuff);
 	get_cvar_string("knife_world_model", sBuff, charsmax(sBuff));
-	ArrayPushString(g_aModel, sBuff);
+	if(sBuff[0]) {	
+		formatex(szFile, charsmax(szFile), "models/Reborn/%s.mdl", sBuff);
+		if(file_exists(szFile)) {
+			engfunc(EngFunc_PrecacheModel, szFile);
+			copy(g_aModel[KNIFE_WORLD_MODEL], charsmax(g_aModel[KNIFE_WORLD_MODEL]), szFile);
+		}
+	}
+	//ArrayPushString(g_aModel, sBuff);
 
 	get_cvar_string("ak_view_model", sBuff, charsmax(sBuff));
-	ArrayPushString(g_aModel, sBuff);
+	if(sBuff[0]) {	
+		formatex(szFile, charsmax(szFile), "models/Reborn/%s.mdl", sBuff);
+		if(file_exists(szFile)) {
+			engfunc(EngFunc_PrecacheModel, szFile);
+			copy(g_aModel[AK_VIEW_MODEL], charsmax(g_aModel[AK_VIEW_MODEL]), szFile);
+		}
+	}
+	//ArrayPushString(g_aModel, sBuff);
 	get_cvar_string("ak_player_model", sBuff, charsmax(sBuff));
-	ArrayPushString(g_aModel, sBuff);
+	if(sBuff[0]) {	
+		formatex(szFile, charsmax(szFile), "models/Reborn/%s.mdl", sBuff);
+		if(file_exists(szFile)) {
+			engfunc(EngFunc_PrecacheModel, szFile);
+			copy(g_aModel[AK_PLAYER_MODEL], charsmax(g_aModel[AK_PLAYER_MODEL]), szFile);
+		}
+	}
+	//ArrayPushString(g_aModel, sBuff);
 	get_cvar_string("ak_world_model", sBuff, charsmax(sBuff));
-	ArrayPushString(g_aModel, sBuff);
+	if(sBuff[0]) {	
+		formatex(szFile, charsmax(szFile), "models/Reborn/%s.mdl", sBuff);
+		if(file_exists(szFile)) {
+			engfunc(EngFunc_PrecacheModel, szFile);
+			copy(g_aModel[AK_WORLD_MODEL], charsmax(g_aModel[AK_WORLD_MODEL]), szFile);
+		}
+	}
+	//ArrayPushString(g_aModel, sBuff);
 
 	get_cvar_string("awp_view_model", sBuff, charsmax(sBuff));
-	ArrayPushString(g_aModel, sBuff);
+	if(sBuff[0]) {	
+		formatex(szFile, charsmax(szFile), "models/Reborn/%s.mdl", sBuff);
+		if(file_exists(szFile)) {
+			engfunc(EngFunc_PrecacheModel, szFile);
+			copy(g_aModel[AWP_VIEW_MODEL], charsmax(g_aModel[AWP_VIEW_MODEL]), szFile);
+		}
+	}
+	//ArrayPushString(g_aModel, sBuff);
 	get_cvar_string("awp_player_model", sBuff, charsmax(sBuff));
-	ArrayPushString(g_aModel, sBuff);
+	if(sBuff[0]) {	
+		formatex(szFile, charsmax(szFile), "models/Reborn/%s.mdl", sBuff);
+		if(file_exists(szFile)) {
+			engfunc(EngFunc_PrecacheModel, szFile);
+			copy(g_aModel[AWP_PLAYER_MODEL], charsmax(g_aModel[AWP_PLAYER_MODEL]), szFile);
+		}
+	}
+	//ArrayPushString(g_aModel, sBuff);
 	get_cvar_string("awp_world_model", sBuff, charsmax(sBuff));
-	ArrayPushString(g_aModel, sBuff);
+	if(sBuff[0]) {	
+		formatex(szFile, charsmax(szFile), "models/Reborn/%s.mdl", sBuff);
+		if(file_exists(szFile)) {
+			engfunc(EngFunc_PrecacheModel, szFile);
+			copy(g_aModel[AWP_WORLD_MODEL], charsmax(g_aModel[AWP_WORLD_MODEL]), szFile);
+		}
+	}
+	//ArrayPushString(g_aModel, sBuff);
 
 	get_cvar_string("m4a1_view_model", sBuff, charsmax(sBuff));
-	ArrayPushString(g_aModel, sBuff);
+	if(sBuff[0]) {	
+		formatex(szFile, charsmax(szFile), "models/Reborn/%s.mdl", sBuff);
+		if(file_exists(szFile)) {
+			engfunc(EngFunc_PrecacheModel, szFile);
+			copy(g_aModel[M4A1_VIEW_MODEL], charsmax(g_aModel[M4A1_VIEW_MODEL]), szFile);
+		}
+	}
+	//ArrayPushString(g_aModel, sBuff);
 	get_cvar_string("m4a1_player_model", sBuff, charsmax(sBuff));
-	ArrayPushString(g_aModel, sBuff);
+	if(sBuff[0]) {	
+		formatex(szFile, charsmax(szFile), "models/Reborn/%s.mdl", sBuff);
+		if(file_exists(szFile)) {
+			engfunc(EngFunc_PrecacheModel, szFile);
+			copy(g_aModel[M4A1_PLAYER_MODEL], charsmax(g_aModel[M4A1_PLAYER_MODEL]), szFile);
+		}
+	}
+	//ArrayPushString(g_aModel, sBuff);
 	get_cvar_string("m4a1_world_model", sBuff, charsmax(sBuff));
-	ArrayPushString(g_aModel, sBuff);
+	if(sBuff[0]) {	
+		formatex(szFile, charsmax(szFile), "models/Reborn/%s.mdl", sBuff);
+		if(file_exists(szFile)) {
+			engfunc(EngFunc_PrecacheModel, szFile);
+			copy(g_aModel[M4A1_WORLD_MODEL], charsmax(g_aModel[M4A1_WORLD_MODEL]), szFile);
+		}
+	}
+	//ArrayPushString(g_aModel, sBuff);
 
-	for(new i = 0; i < ArraySize(g_aModel); i++) {
+	/*for(new i = 0; i < ArraySize(g_aModel); i++) {
 		ArrayGetString(g_aModel, i, sBuff, charsmax(sBuff))
 		if(!sBuff[0]) continue;
 		formatex(szFile, charsmax(szFile), "models/Reborn/%s.mdl", sBuff);
 		if(!file_exists(szFile)) continue;
 		engfunc(EngFunc_PrecacheModel, szFile);
 		ArraySetString(g_aModel, i, szFile);
-	}
+	}*/
 }
 
 GetMap() {
@@ -226,21 +311,24 @@ public fw_SetModel_Pre(entity, model[]) {
 		if(pev(entity, pev_impulse)) {
 			switch(pev(id, pev_iuser2)) {
 				case AK_KEY: {
-					ArrayGetString(g_aModel, AK_WORLD_MODEL, WeaponModel, 63);
+					copy(WeaponModel, charsmax(WeaponModel), g_aModel[AK_WORLD_MODEL]);
+					//ArrayGetString(g_aModel, AK_WORLD_MODEL, WeaponModel, 63);
 					if(!file_exists(WeaponModel)) return FMRES_IGNORED;
 					engfunc(EngFunc_SetModel, entity, WeaponModel);
 					set_pev(id, pev_iuser2, 0);
 					return FMRES_SUPERCEDE;
 				}
 				case AWP_KEY: {
-					ArrayGetString(g_aModel, AWP_WORLD_MODEL, WeaponModel, 63);
+					copy(WeaponModel, charsmax(WeaponModel), g_aModel[AWP_WORLD_MODEL]);
+					//ArrayGetString(g_aModel, AWP_WORLD_MODEL, WeaponModel, 63);
 					if(!file_exists(WeaponModel)) return FMRES_IGNORED;
 					engfunc(EngFunc_SetModel, entity, WeaponModel);
 					set_pev(id, pev_iuser2, 0);
 					return FMRES_SUPERCEDE;
 				}
 				case M4A1_KEY: {
-					ArrayGetString(g_aModel, M4A1_WORLD_MODEL, WeaponModel, 63);
+					copy(WeaponModel, charsmax(WeaponModel), g_aModel[M4A1_WORLD_MODEL]);
+					//ArrayGetString(g_aModel, M4A1_WORLD_MODEL, WeaponModel, 63);
 					if(!file_exists(WeaponModel)) return FMRES_IGNORED;
 					engfunc(EngFunc_SetModel, entity, WeaponModel);
 					set_pev(id, pev_iuser2, 0);
@@ -317,9 +405,9 @@ public Handle_RebornMenu(iPlayer, iKey) {
 		}
 		case 2: {
 			give_item(iPlayer, "weapon_awp");
-			give_item(iPlayer, "ammp_338magnum");
-			give_item(iPlayer, "ammp_338magnum");
-			give_item(iPlayer, "ammp_338magnum");
+			give_item(iPlayer, "ammo_338magnum");
+			give_item(iPlayer, "ammo_338magnum");
+			give_item(iPlayer, "ammo_338magnum");
 			return Show_RebornMenu(iPlayer);
 		}
 		case 3: {
@@ -343,9 +431,9 @@ public Handle_RebornMenu(iPlayer, iKey) {
 		}
 		case 5: {
 			new iWeapon = give_item(iPlayer, "weapon_awp");
-			give_item(iPlayer, "ammp_338magnum");
-			give_item(iPlayer, "ammp_338magnum");
-			give_item(iPlayer, "ammp_338magnum");
+			give_item(iPlayer, "ammo_338magnum");
+			give_item(iPlayer, "ammo_338magnum");
+			give_item(iPlayer, "ammo_338magnum");
 			if(pev_valid(iWeapon)) {
 				set_pev(iWeapon, pev_impulse, AWP_KEY);
 				new iActiveItem = get_pdata_cbase(iPlayer, m_pActiveItem, linux_diff_player);
@@ -401,33 +489,39 @@ public deploy_weapon(wpn) {
 	
 	switch(pev(wpn, pev_impulse)) {
 		case AK_KEY: {
-			new sBuff[64]; 
-			ArrayGetString(g_aModel, AK_VIEW_MODEL, sBuff, 63)
-			if(!file_exists(sBuff)) return;
-			set_pev(id, pev_viewmodel2, sBuff);
-			ArrayGetString(g_aModel, AK_PLAYER_MODEL, sBuff, 63)
-			if(!file_exists(sBuff)) return;
-			set_pev(id, pev_weaponmodel2, sBuff)
+			//new sBuff[64];
+			//ArrayGetString(g_aModel, AK_VIEW_MODEL, sBuff, 63)
+			if(!file_exists(g_aModel[AK_VIEW_MODEL])) return;
+			set_pev(id, pev_viewmodel2, g_aModel[AK_VIEW_MODEL]);
+
+			//ArrayGetString(g_aModel, AK_PLAYER_MODEL, sBuff, 63)
+			if(!file_exists(g_aModel[AK_PLAYER_MODEL])) return;
+			set_pev(id, pev_weaponmodel2, g_aModel[AK_PLAYER_MODEL]);
+
 			set_pev(id, pev_iuser2, AK_KEY);
 		}
 		case AWP_KEY: {
-			new sBuff[64]; 
-			ArrayGetString(g_aModel, AWP_VIEW_MODEL, sBuff, 63)
-			if(!file_exists(sBuff)) return;
-			set_pev(id, pev_viewmodel2, sBuff);
-			ArrayGetString(g_aModel, AWP_PLAYER_MODEL, sBuff, 63)
-			if(!file_exists(sBuff)) return;
-			set_pev(id, pev_weaponmodel2, sBuff)
+			//new sBuff[64]; 
+			//ArrayGetString(g_aModel, AWP_VIEW_MODEL, sBuff, 63)
+			if(!file_exists(g_aModel[AWP_VIEW_MODEL])) return;
+			set_pev(id, pev_viewmodel2, g_aModel[AWP_VIEW_MODEL]);
+
+			//ArrayGetString(g_aModel, AWP_PLAYER_MODEL, sBuff, 63)
+			if(!file_exists(g_aModel[AWP_PLAYER_MODEL])) return;
+			set_pev(id, pev_weaponmodel2, g_aModel[AWP_PLAYER_MODEL]);
+
 			set_pev(id, pev_iuser2, AWP_KEY);
 		}
 		case M4A1_KEY: {
-			new sBuff[64]; 
-			ArrayGetString(g_aModel, M4A1_VIEW_MODEL, sBuff, 63)
-			if(!file_exists(sBuff)) return;
-			set_pev(id, pev_viewmodel2, sBuff);
-			ArrayGetString(g_aModel, M4A1_PLAYER_MODEL, sBuff, 63)
-			if(!file_exists(sBuff)) return;
-			set_pev(id, pev_weaponmodel2, sBuff)
+			//new sBuff[64]; 
+			//ArrayGetString(g_aModel, M4A1_VIEW_MODEL, sBuff, 63)
+			if(!file_exists(g_aModel[M4A1_VIEW_MODEL])) return;
+			set_pev(id, pev_viewmodel2, g_aModel[M4A1_VIEW_MODEL]);
+
+			//ArrayGetString(g_aModel, M4A1_PLAYER_MODEL, sBuff, 63);
+			if(!file_exists(g_aModel[M4A1_PLAYER_MODEL])) return;
+			set_pev(id, pev_weaponmodel2, g_aModel[M4A1_PLAYER_MODEL]);
+
 			set_pev(id, pev_iuser2, M4A1_KEY);
 		}
 	}
@@ -437,13 +531,14 @@ public deploy_knife(wpn) {
 	static id; id = get_pdata_cbase(wpn, 41, 4);
 
 	if(g_bKnifeEnable[id]) {
-		new sBuff[64]; 
-		ArrayGetString(g_aModel, KNIFE_VIEW_MODEL, sBuff, 63)
-		if(!file_exists(sBuff)) return;
-		set_pev(id, pev_viewmodel2, sBuff);
-		ArrayGetString(g_aModel, KNIFE_PLAYER_MODEL, sBuff, 63)
-		if(!file_exists(sBuff)) return;
-		set_pev(id, pev_weaponmodel2, sBuff)
+		//new sBuff[64]; 
+		//ArrayGetString(g_aModel, KNIFE_VIEW_MODEL, sBuff, 63)
+		if(!file_exists(g_aModel[KNIFE_VIEW_MODEL])) return;
+		set_pev(id, pev_viewmodel2, g_aModel[KNIFE_VIEW_MODEL]);
+
+		//ArrayGetString(g_aModel, KNIFE_PLAYER_MODEL, sBuff, 63);
+		if(!file_exists(g_aModel[KNIFE_PLAYER_MODEL])) return;
+		set_pev(id, pev_weaponmodel2, g_aModel[KNIFE_PLAYER_MODEL]);
 	}
 }
 
