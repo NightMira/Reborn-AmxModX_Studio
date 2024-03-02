@@ -61,13 +61,13 @@ enum _:CVAR {
 
 public plugin_precache() {
 	g_aModel = ArrayCreate(64, 0);
-	//register_clcmd("test", "fn_test");
+	register_clcmd("test", "fn_test");
 	CvarInit();
 	GetModel();
 	GetMap();
 }
 
-//public fn_test(iPlayer) return Show_RebornMenu(iPlayer);
+public fn_test(iPlayer) return Show_RebornMenu(iPlayer);
 
 CvarInit() {
 	g_iCvar[DAMAGE_AK] = register_cvar("rb_damage_ak", "2.0");
